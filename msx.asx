@@ -1,0 +1,287 @@
+licz	equ	$a0
+mainnote equ	$a1
+mainvol	equ	$a2
+hihvol	equ	$a3
+pozycja	equ	$a4
+
+	ift	STANDALONE_MSX
+	org	$8000
+	eif
+
+x0	equ	0
+x1	equ	1
+x2	equ	2
+x3	equ	3
+sz	equ	0
+si	equ	4
+NOTE	equ	8
+___	equ	0
+Dh2	equ	NOTE
+E_2	equ	NOTE*2
+; F_2
+Fh2	equ	NOTE*4
+; G_2
+Gh2	equ	NOTE*6
+A_2	equ	NOTE*7
+; Ah2
+H_2	equ	NOTE*9
+C_3	equ	NOTE*10
+Ch3	equ	NOTE*11
+D_3	equ	NOTE*12
+; Dh3
+E_3	equ	NOTE*14
+; F_3
+Fh3	equ	NOTE*16
+
+BASS equ 29
+; TODO
+DhB	equ	NOTE*29
+F_B	equ	NOTE*30
+FhB	equ	NOTE*31
+
+song
+
+; pattern 3
+	dta	E_2+x1
+	dta	Fh2+x2
+	dta	Gh2+x0
+
+; pattern 1 + pattern 2
+	dta	A_2+x2+sz
+	dta	___+x1+sz
+	dta	A_2+x2+si
+	dta	H_2+x1+si
+	dta	Ch3+x2+sz
+	dta	E_3+x1+sz
+	dta	Fh3+x2+si
+	dta	E_3+x1+si
+	dta	C_3+x2+sz
+	dta	___+x1+sz
+	dta	A_2+x2+si
+	dta	H_2+x1+si
+	dta	___+x2+sz
+	dta	A_2+x1+sz
+	dta	Fh2+x2+si
+	dta	E_2+x1+si
+
+	dta	Dh2+x2+sz
+	dta	___+x1+sz
+	dta	H_2+x2+si
+	dta	___+x1+si
+	dta	D_3+x2+sz
+	dta	___+x1+sz
+	dta	___+x2+si
+	dta	E_3+x1+si
+	dta	Ch3+x2+sz
+	dta	A_2+x1+sz
+	dta	___+x2+si
+	dta	___+x1+si
+	dta	___+x2+sz
+	dta	___+x1+sz
+	dta	___+x2+si
+	dta	___+x0+si
+
+songrep	equ	*-song
+; pattern 5
+	dta	___+x2+sz
+	dta	___+x1+sz
+	dta	___+x2+si
+	dta	___+x1+si
+	dta	___+x2+sz
+	dta	FhB+x1+sz
+	dta	F_B+x2+si
+	dta	FhB+x1+si
+	dta	DhB+x2+sz
+	dta	___+x1+sz
+	dta	H_2+x2+si
+	dta	___+x1+si
+	dta	D_3+x2+sz
+	dta	___+x1+sz
+	dta	___+x2+si
+	dta	E_3+x1+si
+
+	dta	Ch3+x2+sz
+	dta	A_2+x1+sz
+	dta	___+x2+si
+	dta	___+x1+si
+	dta	___+x2+sz
+	dta	FhB+x1+sz
+	dta	F_B+x2+si
+	dta	FhB+x1+si
+	dta	DhB+x2+sz
+	dta	___+x1+sz
+	dta	H_2+x2+si
+	dta	___+x1+si
+	dta	D_3+x2+sz
+	dta	E_3+x1+sz
+	dta	___+x2+si
+	dta	Ch3+x1+si
+
+	dta	___+x2+sz
+	dta	___+x1+sz
+	dta	___+x2+si
+	dta	___+x1+si
+	dta	___+x2+sz
+	dta	FhB+x1+sz
+	dta	F_B+x2+si
+	dta	FhB+x1+si
+	dta	DhB+x2+sz
+	dta	___+x1+sz
+	dta	H_2+x2+si
+	dta	___+x1+si
+	dta	D_3+x2+sz
+	dta	___+x1+sz
+	dta	___+x2+si
+	dta	E_3+x1+si
+
+	dta	Ch3+x2+sz
+	dta	A_2+x1+sz
+	dta	___+x2+si
+	dta	H_2+x1+si
+	dta	Ch3+x2+sz
+	dta	A_2+x1+sz
+	dta	___+x2+si
+	dta	H_2+x1+si
+	dta	Ch3+x2+sz
+	dta	A_2+x1+sz
+	dta	___+x2+si
+	dta	H_2+x1+si
+	dta	Ch3+x2+sz
+	dta	A_2+x1+sz
+	dta	Fh2+x2+si
+	dta	E_2+x1+si
+
+; pattern 6 + pattern 4
+	dta	A_2+x3+si
+	dta	A_2+x3+si
+	dta	A_2+x2+si
+	dta	A_2+x3+si
+	dta	A_2+x0+si
+
+; pattern 7
+:13	dta	___+x2+sz,___+x1+sz,___+x2+si,___+x1+si
+
+songlen	equ	*-song
+
+freq
+; Dh2
+	dta	$63,$5f,$5a,$55,$50,$4b,$47,$43,$3f,$3c,$38,$35
+; Dh3
+	dta	$32,$2f,$2c,$2a,$28,$25,$23,$21,$1f,$1d,$1c,$1a
+; Dh4
+	dta	$18,$17,$16,$14
+
+; bass Dh1,F_1,Fh1
+	dta	$ce,$bf,$aa
+:9	dta	$aa ; unused
+; bass Dh2,F_2,Fh2
+	dta	$65,$5c,$56
+
+volume
+vol_voice	equ	*-volume
+	dta	$a7,$a7,$e7,$e7
+:3	dta	$a4,$a4,$e4,$e4
+	dta	$a3,$a3,$e3,$e3
+	dta	$a2,$a2,$e2,$e2
+	dta	$a1,$a1,$e1,$e1
+	dta	$a0,0
+vol_bass	equ	*-volume
+	dta	$c9,$c8,$c7,$c5,$c5,$c4,$c4,$c4,$c3,$c3,$c3,$c2,$c2,$c2,$c1,0
+vol_sz	equ	*-volume
+	dta	$03,$01,$01,$a0,0
+vol_si	equ	*-volume
+	dta	$05,$02,$02,$01,$01,$01,$a0,0
+
+tempos
+	dta	3,6,12,18
+
+	ift	STANDALONE_MSX
+main
+	mva	#3	^2f
+	lsr	@
+	sta	licz
+	lsr	@
+	sta	pozycja
+	sta	^28
+loop
+	lda	20
+	cmp	20
+	req
+
+	els
+msx_player
+	eif
+
+	dec	licz
+	bne	nienuta
+	ldx	pozycja
+	lda	song,x
+	and	#3
+	tay
+	lda	^14
+	and	#$e
+	seq:tya
+	add	tempos,y
+	sta	licz
+	lda	song,x
+	inx
+	cpx	#songlen
+	scc:ldx	#songrep
+	stx	pozycja
+:3	lsr	@
+	ldx	#9
+	ldy	#vol_sz
+	bcc	sethih
+	ldx	#1
+	ldy	#vol_si
+sethih
+	stx	^22
+	sty	hihvol
+	tay
+	beq	samemain
+	sta	mainnote
+	cpy	#BASS
+	ldy	#vol_voice
+	scc:ldy	#vol_bass
+	sty	mainvol
+samemain
+
+nienuta
+	ldy	mainvol
+	lda	volume,y
+	beq	finmain
+	inc	mainvol
+	sta	^21
+	sta	^25
+	cmp	#$e0
+	lda	#0
+	bcc	addfreq
+	lda	20
+	and	#4
+	sub	#2
+	clc
+addfreq
+	ldy	mainnote
+	adc	freq-1,y
+	sta	^20
+	sub	freq-1,y
+	add	freq-1+12,y
+	sta	^24
+finmain
+	ldy	hihvol
+	lda	volume,y
+	beq	finhih
+	inc	hihvol
+	sta	^23
+finhih
+
+	ift	STANDALONE_MSX
+	jmp	loop
+
+	run	main
+
+	els
+
+	rts
+
+	eif

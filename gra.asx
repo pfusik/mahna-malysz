@@ -1,0 +1,865 @@
+START_UP_VEL	equ	328
+MACH_VEL	equ	150
+GRAVITY	equ	4
+LADUJ_Y	equ	85
+
+SKOCZNIA equ 10
+TLO equ 47
+WIDTH equ TLO+21
+
+KROWKI_MRUGAJA	equ	$14b
+ILEBUL	equ	207
+ILEBAN	equ	171
+
+MSX	equ	1
+STANDALONE_MSX	equ	0
+
+fscrol equ	$80
+hscrol equ	$81
+speed  equ	$82
+bscrol equ	$83
+adamx  equ	$84
+adamy  equ	$85
+div4   equ	$87
+bullcnt equ	$88
+banacnt equ	$89
+mask   equ	$8a
+aniy	equ	$8b
+opozstart equ	$8c
+moznapojawiac equ	$8d
+jestbul	equ	$8e
+jestban	equ	$8f
+adamv	equ	$90
+oldfire	equ	$92
+flash	equ	$93
+
+PMG_what	equ	$2300
+PMG_hpos	equ	$2380
+PMG	equ	$2400
+PMG_color0	equ	PMG+$00
+PMG_color1	equ	PMG+$80
+PMG_color2	equ	PMG+$100
+PMG_color3	equ	PMG+$180
+PMG_data0	equ	PMG+$200
+PMG_data1	equ	PMG+$280
+PMG_data2	equ	PMG+$300
+PMG_data3	equ	PMG+$380
+
+	org	$2800
+font
+	ins	'tlo.fnt'
+screen
+	ins	'tlo.scr',0,TLO
+	ins	'tlo.scr',SKOCZNIA,21
+	ins	'tlo.scr',TLO,TLO
+	ins	'tlo.scr',TLO+SKOCZNIA,21
+	ins	'tlo.scr',2*TLO,TLO
+	ins	'tlo.scr',2*TLO+SKOCZNIA,21
+	ins	'tlo.scr',3*TLO,TLO
+	ins	'tlo.scr',3*TLO+SKOCZNIA,21
+	ins	'tlo.scr',4*TLO,TLO
+	ins	'tlo.scr',4*TLO+SKOCZNIA,21
+	ins	'tlo.scr',5*TLO,TLO
+	ins	'tlo.scr',5*TLO+SKOCZNIA,21
+	ins	'tlo.scr',6*TLO,TLO
+	ins	'tlo.scr',6*TLO+SKOCZNIA,21
+	ins	'tlo.scr',7*TLO,TLO
+	ins	'tlo.scr',7*TLO+SKOCZNIA,21
+	ins	'tlo.scr',8*TLO,TLO
+	ins	'tlo.scr',8*TLO+SKOCZNIA,21
+	ins	'tlo.scr',9*TLO,TLO
+	ins	'tlo.scr',9*TLO+SKOCZNIA,21
+	ins	'tlo.scr',10*TLO,TLO
+	ins	'tlo.scr',10*TLO+SKOCZNIA,21
+	ins	'tlo.scr',11*TLO,TLO
+	ins	'tlo.scr',11*TLO+SKOCZNIA,21
+dl
+	dta	$70,$70,$c6,a(status)
+dll
+:12*3	dta	$57
+dlb
+	dta	$56,a(banner)
+	dta	$41,a(dl)
+colors
+	dta	$0c,$46,$1a,$00
+missiles
+	dta	$20,$28,$d0,$d8
+
+bulle
+	dta	RED0,RED1,RED2,RED2,RED2,RED3,RED4,RED4
+
+status
+	dta	d'mahna',$4d,d'malysz 4K GAME'
+fuel
+	dta	d'red full',$5a
+bulls
+	dta	$53,0,d'BANANAS'*,$9a
+bananas
+	dta	$93
+landing
+	dta	d' emergency landing',$41,d' '
+
+banner
+	dta	d'                              '
+	dta	d'POLISH SKI JUMPER adam malysz IS THE WORLD CHAMPION.   '
+	dta	d'USE fire OR shift TO CONTROL ADAM.      '
+	dta	d'DRINK red full AND EAT ',d'BANANAS'*,d'.      '
+	dta	d'AVOID OTHER SKI JUMPERS, BIRDS AND ... JUST WATCH OUT.        '
+	dta d'CURRENT WORLD RECORD IS:'
+record
+	dta	d'  128M.'
+	dta	d'         '
+	dta	d'GAME IDEA AND PROGRAMMING BY piotr fusik      '
+	dta	d'ARTWORK AND SOUNDTRACK BY lukasz sychowicz      '
+	dta	d'2003-09-28'
+banend
+	dta	d'                        '
+
+	icl	'sprajty.asx'
+
+leftMask
+	dta	$01,$03,$07,$0f,$1f,$3f,$7f
+
+; od 104,78 ADAMZJAZD2
+; 105,79
+; 106,79
+; 107,80
+; od 109,80 ADAMZJAZD1
+; od 115,80 ADAMZJAZD3
+; 116,79
+; 117,79
+; 118,79
+; 119,78
+; 120,78
+; 121,77
+; 122,77
+; 123,76
+; 124,74
+; 125,73
+; 126,72 LOT0
+
+zjazdy
+:5	dta	ADAMZJAZD2
+:6	dta	ADAMZJAZD1
+:11	dta	ADAMZJAZD3
+
+rowek
+	dta	78,79,79,80,80,80 ;104
+	dta	80,80,80,80,80,80,79,79,79,78 ;110
+	dta	78,77,77,76,74,73
+
+	ift	MSX
+	icl	'msx.asx'
+	eif
+
+dli
+	pha
+	txa:pha
+	tya:pha
+	ldx	#16
+	mva	PMG_color0,x	^12
+	mva	PMG_color1,x	^13
+	mva	fscrol	^44
+	lda	#$c
+	sta	^4a
+	sta	^1a
+	mva	>font	^49
+	mva	#$98	^16
+	mva	#$c4	^17
+	mva	#$c6	^18
+	sta	^4a
+	stx	$4d ; atract
+	inx
+dli1
+	ldy	PMG_color2,x
+	mva	PMG_color3,x	dlic3a+1
+	sta	dlic3b+1
+	lda	PMG_hpos,x
+	beq	dlinhp
+	lda	^0c
+	ora	^0d
+	sta	PMG_what+2,x
+	lda	PMG_hpos,x
+	sta	^4a
+	sta	^02
+	sta	^03
+	sty	^14
+dlic3a	mva	#0	^15
+	mva	PMG_color0,x	^12
+	mva	PMG_color1,x	^13
+	jmp	dlinx
+dlinhp
+	sta	^4a
+	sty	^14
+dlic3b	mva	#0	^15
+	mva	PMG_color0,x	^12
+	mva	PMG_color1,x	^13
+dlinx
+	sta	^4a
+	inx
+	cpx	#16+96
+	bcc	dli1
+	ldx	#$e0
+	ldy	bscrol
+	mva	#0	^4a
+	sta	^1a
+	stx	^49
+	sty	^44
+	mva	#$c	^16
+botcol equ *+1
+	mva	#$26	^17
+	mva	#$1a	^18
+:MSX	jsr	msx_player
+	ldy	#$26
+	lda	flash
+	beq	sbot
+	lda	20
+	and	#12
+	bne	sbot
+	tay	#0
+sbot
+	sty	botcol
+	ift	KROWKI_MRUGAJA
+	lda	20
+	and	#7
+	bne	niemrug
+	lda	^2a
+	lsr	@
+	seq:lda	#$50
+	sta	font+KROWKI_MRUGAJA
+niemrug
+	eif
+	pla:tay
+	pla:tax
+	pla
+	rti
+
+main
+:MSX	jsr	startMsx
+	jsr	setBak0
+	jsr	ramka
+	mwa	#dli	$200
+	mva	#$2a	$22f
+	mwa	#dl	$230
+	mva	#0	$2c4
+	ldx	#30
+	lda	#0
+	sta:rpl	^00,x-
+	ldx	#3
+initgtia
+	mva	colors,x	$2c4,x
+	mva	missiles,x	^04,x
+	dex:bpl	initgtia
+	stx	^4e
+	mva	>PMG	^47
+	mva	#$31	$26f
+
+	mva	#$ff	^0c
+	sta	^11
+	mva	#2	^1d
+
+	jsr	adamlawka
+;;	lda	#18*4
+
+restart
+;;	sta	opozstart
+
+	mva	#0	flash
+	mva	#$f	bscrol
+	mva	#$56	dlb
+
+poczbaneruj
+	mwa	#banner	dlb+1
+
+baneruj
+	ldx	bscrol
+	dex
+	cpx	#8
+	bcs	ban
+
+	inw	dlb+1
+	lda	dlb+1
+	cmp	<banend
+	lda	dlb+2
+	sbc	>banend
+	bcs	poczbaneruj
+
+	ldx	#15
+ban
+	stx	bscrol
+
+	jsr	ramka
+
+;;	dec	opozstart
+;;	bne	baneruj
+;;	inc	opozstart
+
+	jsr	fire
+	bne	baneruj
+
+	jsr	adamLawka
+	jsr	setBak0
+
+	jsr	startMsx
+	mva	#$46	dlb
+	mwa	#fuel	dlb+1
+
+	mva	#$2d	status+19
+	ldx	#6
+	lda	#16
+zeroscor
+	sta	status+12,x
+	lda	#0
+	dex:bpl	zeroscor
+
+	mva	#$53	bulls
+	mva	#$93	bananas
+	mva	#0	moznapojawiac
+	sta	jestbul
+	sta	jestban
+	lda	#ILEBUL
+	sta	bullcnt
+	lda	#ILEBAN
+	sta	banacnt
+	mva	#1	speed
+	mwa	#-START_UP_VEL	adamv
+
+;;;
+zjezdzaj
+	jsr	ramka
+	jsr	delAdam
+	lda:tax	adamx
+	sub	#26
+	tay
+	lda	#ADAMZJAZD0
+	cpx	#104
+	bcc	poczzja
+	ldy	rowek-104,x
+	lda	zjazdy-104,x
+poczzja
+	tax
+	jsr	setAdam
+	inc	adamx
+
+	lda	adamx
+	cmp	#$7e
+	bcc	zjezdzaj
+
+scroll
+	jsr	ramka
+
+	lda	^0c
+	ora	^0d
+	sta	^1e
+	and	#$c
+	beq	nohit
+
+	ldx	#20
+	ldy	#0
+cohit
+	lda	PMG_what+2,x
+	and	#$c
+	bne	jesthit
+	lda	PMG_what,x
+	seq:tay
+	txa
+	add	#8
+	tax
+	cmp	#20+72
+	bcc	cohit
+jesthit
+	tya
+	beq	nohit
+
+	cpy	#RED0
+	bne	niepij
+	inc	bulls
+	mva	#0	jestbul
+	mva	#ILEBUL	bullcnt
+	jmp	nohit
+niepij
+
+	cpy	#BANAN
+	jne	awaria
+	inc	bananas
+	mva	#0	jestban
+	mva	#ILEBAN	banacnt
+
+nohit
+	inc:lda	div4
+	and	#3
+	bne	ndiv4
+	dec	bullcnt
+	bne	nbull
+	lda	bulls
+	and	#$f
+	jeq	awaria
+	dec	bulls
+	mva	#ILEBUL	bullcnt
+nbull
+	dec	banacnt
+	bne	nbana
+	lda	bananas
+	and	#$f
+	beq	awaria
+	dec	bananas
+	mva	#ILEBAN	banacnt
+nbana
+ndiv4
+
+	jsr	animuj
+	jsr	delAdam
+
+	ldy	adamy+1
+	cpy	#LADUJ_Y
+	bcs	laduj
+
+	jsr	skrolujTlo
+
+	ldx	#ADAMLOT0
+	jsr	fire
+	sne
+	ldx	#ADAMLOT1
+	cmp:sta	oldfire
+	bcs	niefrun
+	lda	adamv
+	sub	#MACH_VEL
+	sta	adamv
+	lda	adamv+1
+	sbc	#0
+	sta	adamv+1
+	cmp	#-2
+	spl:mwa	#-512	adamv
+niefrun
+	lda	adamv
+	add:sta	adamy
+	lda	adamv+1
+	adc	adamy+1
+	cmp	#16
+	scs:lda	#16
+;	cmp	#90
+;	scc:lda	#90
+	sta	adamy+1
+	tay
+	lda	#GRAVITY
+	add:sta	adamv
+	lda	#0
+	adc:sta	adamv+1
+	cmp	#2
+	smi:mwa	#512	adamv
+
+nieskrol
+	jsr	setAdam
+
+	jmp	scroll
+
+awaria
+	mwa	#landing	dlb+1
+	sta	flash
+	jmp	laduj
+
+laduj_loop
+	jsr	ramka
+laduj
+	mva	#0	moznapojawiac
+ jsr animuj
+	jsr	skrolujTlo
+	jsr	delAdam
+	inc:ldy	adamy+1
+	ldx	#ADAMLOT0
+	cpy	#LADUJ_Y
+	scc:ldx	#ADAMZJAZD3
+	jsr	setAdam
+	ldy	adamy+1
+	cpy	#90
+	bcc	laduj_loop
+
+	mva	#0	adamy
+	sta	speed
+	lda	#252
+
+hamuj_loop
+	sta	adamv
+	jsr	ramka
+ jsr animuj
+	jsr	delAdam
+	ldx	#ADAMZJAZD1
+	ldy	#91
+	jsr	setAdam
+	lda	adamv
+	add:sta	adamy
+	lda	#0
+	adc:sta	adamx
+	lda	adamv
+	sub	#2
+	bcs	hamuj_loop
+
+	ldx	#WIWAT0
+	ldy	#89
+	jsr	setAdam
+	mva	#5	adamv
+wiw
+	jsr	ramka
+ jsr animuj
+	dec	adamv
+	bne	wiw
+
+	ldx	#WIWAT1
+	ldy	#89
+	jsr	setAdam
+
+; od 88 ADAMZJAZD3
+; 90 ADAMZJAZD1 - prosto
+; 89 WIWAT0
+;	ldx	#WIWAT1 ADAMZJAZD1
+;	lda	adamx
+;	jsr	setAdam
+
+;;;gameOver
+	ldx	#-1
+high1
+	inx
+	cpx	#5
+	bcs	noHigh
+	lda	status+14,x
+	cmp	record,x
+	bcc	noHigh
+	beq	high1
+high2
+	mva	status+14,x	record,x
+	inx:cpx	#5
+	bcc	high2
+noHigh
+;;;	lda	#100
+	jmp	restart
+
+
+skrolujTlo
+	lda	fscrol
+	sub	speed
+	cmp	#8
+	bcs	shscrol
+	adc	#8
+	pha
+
+	ldy	status+18-2
+	ldx	#18
+incscore
+	lda	status,x
+	sne:lda	#16
+	add	#1
+	cmp	#16+9+1
+	scc:lda	#16
+	sta	status,x
+	dex
+	bcs	incscore
+	lda	speed
+	cmp	#8
+	bcs	samespeed
+	cpy	status+18-2
+	beq	samespeed
+	lda	status+18-2
+	lsr	@
+	scs
+	inc	speed
+samespeed
+
+	lda	hscrol
+	add	#1
+	cmp	#TLO+1
+	bcc	stahscrol
+	lda #SKOCZNIA+1
+	sta	moznapojawiac
+stahscrol
+	sta	hscrol	
+	jsr	setBak
+
+	pla
+shscrol
+	sta	fscrol
+	rts
+
+setBak0
+	lda	#0
+setBak
+	add	<screen+11*WIDTH-1
+	ldy	>screen+11*WIDTH-1
+	ldx	#33
+sdll
+	sta	dll+1,x
+	tya
+	sta	dll+2,x
+	lda	dll+1,x
+	sub	#WIDTH
+	scs:dey
+:3	dex
+	bpl	sdll
+	rts
+
+animuj
+	ldx	#20
+aniloop
+	stx	aniy
+
+	lda	PMG_what,x
+	jne	nienic
+	lda	moznapojawiac
+	jeq	aninext
+	lda	^2a
+	jne	aninext
+	nop
+	lda	^2a
+	cmp	#$a0
+	jcc	aninext
+
+	lda	jestbul
+	bne	niebul
+	lda	bulls
+	cmp	#$57
+	bcs	niebul
+	ldy	^2a
+	cpy	#150
+	bcs	niebul
+	cpy	#30
+	bcc	dajbula
+	cmp	#$52
+	bcs	niebul
+dajbula
+	lda	#RED0
+	sta	jestbul
+	jmp	ustaw
+niebul
+
+	lda	jestban
+	bne	nieban
+	lda	bananas
+	cmp	#$95
+	bcs	nieban
+	ldy	^2a
+	cpy	#190
+	bcs	nieban
+	cpy	#40
+	bcc	dajbana
+	cmp	#$91
+	bcs	nieban
+dajbana
+	lda	#BANAN
+	sta	jestban
+	jmp	ustaw
+nieban
+	cpx	#20+56
+	bcs	bociek
+	lda	PMG_what+8,x
+	bne	bociek
+	lda	#HANNAWALD
+	ldy	^2a
+	cpy	#$50
+	bcs	bociek
+	cpy	#$10
+	bcs	ustaw
+	mva	#JAGA	PMG_what,x
+	mva	#$20	PMG_hpos,x
+	jmp	aninext
+bociek
+	lda	#BOCIAN0
+
+ustaw
+	sta	PMG_what,x
+	mva	#$d0	PMG_hpos,x
+	jmp	aninext
+
+nienic
+	lda	PMG_hpos,x
+	cmp	#$20
+	bcs	niegin
+	ldy	PMG_what,x
+	lda	#0
+	cpy	#RED0
+	sne:sta	jestbul
+	cpy	#BANAN
+	sne:sta	jestban
+klir
+	mva	#0	PMG_what,x
+	sta	PMG_hpos,x
+	ldy	#8
+PMG_clspr
+	sta	PMG_data2,x
+	sta	PMG_data3,x
+	inx
+	dey:bne	PMG_clspr
+	jmp	aninext
+
+niegin
+	ldy	PMG_what,x
+	lda:inc	PMG_what+1,x
+	cpy	#BOCIAN0
+	bne	niebocian
+
+;	ldy	#BOCIAN0
+	and	#16
+	seq:ldy	#BOCIAN1
+	lda	PMG_hpos,x
+	clc
+	sbc	speed
+	jmp	anisprite
+niebocian
+
+	cpy	#HANNAWALD
+	bne	niehanni
+	lda	#8
+	add:sta	aniy
+	lda	20
+	lsr	@
+	lda	PMG_hpos,x
+	sbc	speed
+	sta	PMG_hpos+8,x
+	jmp	anisprite
+niehanni
+
+	cpy	#RED0
+	bne	niebull
+	ldy	jestbul
+	beq	klir
+:2	lsr	@
+	and	#7
+	tay
+	lda:tay	bulle,y
+	jmp	stojsprajt
+niebull
+
+	cpy	#BANAN
+	bne	niebanan
+	ldy	jestban
+	beq	klir
+stojsprajt
+	lda	PMG_hpos,x
+	sub	speed
+	jmp	anisprite
+niebanan
+
+	cpy	#JAGA
+	bne	niejaga
+	lda	#8
+	add:sta	aniy
+	lda	PMG_hpos,x
+	add	#1
+	sta	PMG_hpos+8,x
+	jmp	anisprite
+niejaga
+
+anisprite
+	sta	PMG_hpos,x
+	jsr	setSprite
+
+aninext
+	lda	aniy
+	add	#8
+	tax
+	cmp	#20+72
+	jcc	aniloop
+	rts	; animuj
+
+delAdam
+	ldx	#16
+	ldy	adamy+1
+	lda	#0
+delAdam1
+	sta	PMG_data0,y
+	sta	PMG_data1,y+
+	dex:bne	delAdam1
+	rts
+
+adamlawka
+	mva	#8	fscrol
+	mva	#0	hscrol
+	mwa	#72*256	adamy
+
+	lda:tax	#0
+clPMG
+	sta	PMG_what,x
+	sta	PMG_data0,x
+	sta	PMG_data2,x
+	inx:bne	clPMG
+
+	ldx	#ADAMZJAZD0
+	mva	#$30	adamx
+	ldy	#22
+;	ldx	#ADAMLOT0
+;	lda	#126
+;	ldy	#72
+
+setAdam
+	lda	adamx
+	sta	^00
+	sta	^01
+setAdam1
+	mva	Sprite_data0,x	PMG_data0,y
+	mva	Sprite_data1,x	PMG_data1,y
+	mva	Sprite_color0,x	PMG_color0,y
+	mva	Sprite_color1,x	PMG_color1,y
+	inx
+	iny
+	lsr	@
+	bcc	setAdam1
+	rts
+
+setSprite
+	sta	PMG_hpos,x
+	sty	mask
+	tay
+	lda	#$ff
+	cpy	#$30
+	bcs	rightSpr
+	lda	#0
+	cpy	#$29
+	bcc	setMask
+	lda	leftMask-$29,y
+	bcs	setMask	!
+rightSpr
+	cpy	#$c9
+	bcc	setMask
+	eor	leftMask-$c9,y
+	cpy	#$d0
+	bcc	setMask
+	lda	#0
+setMask
+	ldy	mask
+	sta	mask
+setSprite1
+	lda	Sprite_data0,y
+	and	mask
+	sta	PMG_data2,x
+	lda	Sprite_data1,y
+	and	mask
+	sta	PMG_data3,x
+	mva	Sprite_color0,y	PMG_color2,x
+	mva	Sprite_color1,y	PMG_color3,x
+	inx
+	iny
+	lsr	@
+	bcc	setSprite1
+	rts
+
+startMsx
+	mva	#3	^2f
+	lsr	@
+	sta	licz
+	lsr	@
+	sta	pozycja
+	sta	^28
+	rts
+
+fire
+	lda	^2f
+:3	lsr	@
+	and	^1f
+	and	$284
+	rts
+
+ramka
+	lda	20
+	cmp:req	20
+	rts
+
+	run	main
+	end
