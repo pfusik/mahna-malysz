@@ -85,7 +85,7 @@ dlb
 
 urlScreen	equ	DataMatrix_data
 urlDl
-	dta	$70,$70,$70,$48,a(urlScreen)
+	dta	$70,$70,$46,a(yourRecord),$70,$48,a(urlScreen)
 :23	dta	8
 	dta	$41,a(urlDl)
 
@@ -107,7 +107,12 @@ bananas
 	dta	$93
 landing
 	dta	d' emergency landing',$41,d' '
+yourRecord
+	dta	d'YOUR RECORD IS      '
 
+hscBanner
+	dta	d'                              '
+	dta	d'PRESS space TO SUBMIT YOUR SCORE ',d'ONLINE!'*
 banner
 	dta	d'                              '
 	dta	d'POLISH SKI JUMPER adam malysz IS THE WORLD CHAMPION.   '
@@ -121,6 +126,8 @@ record
 	dta	d'GAME IDEA AND PROGRAMMING BY piotr fusik      '
 	dta	d'ARTWORK AND SOUNDTRACK BY lukasz sychowicz      '
 	dta	d'2003-09-28'
+	dta	d'         '
+	dta	d'ONLINE HIGHSCORES'*,d' ADDED ON 2016-05-06'
 banend
 	dta	d'                        '
 
@@ -253,9 +260,8 @@ main
 	jsr	ramka
 	mwa	#dli	$200
 	mva	#$2a	$22f
-	mwa	#dl	$230
-	mva	#0	$2c4
-	ldx	#30
+	jsr	gameDl
+	ldx	#$1c
 	lda	#0
 	sta:rpl	^00,x-
 	ldx	#3
@@ -266,10 +272,8 @@ initgtia
 	stx	^4e
 	mva	>PMG	^47
 	mva	#$31	$26f
- jmp	hsc
 	mva	#$ff	^0c
 	sta	^11
-	mva	#2	^1d
 
 	jsr	adamlawka
 ;;	lda	#18*4
@@ -282,7 +286,15 @@ restart
 	mva	#$56	dlb
 
 poczbaneruj
-	mwa	#banner	dlb+1
+	ldx	<banner
+	ldy	>banner
+	lda	yourRecord+19
+	beq	setbaner
+	ldx	<hscBanner
+	ldy	>hscBanner
+setbaner
+	stx	dlb+1
+	sty	dlb+2
 
 baneruj
 	ldx	bscrol
@@ -306,6 +318,22 @@ ban
 ;;	dec	opozstart
 ;;	bne	baneruj
 ;;	inc	opozstart
+
+	lda	yourRecord+19
+	beq	noHsc
+	jsr	tab
+	bne	noHsc
+	ldx	<urlDl
+	ldy	>urlDl
+	lda	#0
+	jsr	setDl
+hscuj
+	jsr	ramka
+	jsr	msx_player
+	jsr	tab
+	bne	hscuj
+	jsr	gameDl
+noHsc
 
 	jsr	fire
 	bne	baneruj
@@ -542,6 +570,7 @@ high2
 	mva	status+14,x	record,x
 	inx:cpx	#5
 	bcc	high2
+	jsr	hsc
 noHigh
 ;;;	lda	#100
 	jmp	restart
@@ -874,12 +903,34 @@ ramka
 	cmp:req	20
 	rts
 
+tab
+	ldx	#$ff
+	lda	$2fc
+	and	#$3f
+	cmp	#$21
+	sne:stx	$2fc
+	rts
+
+gameDl
+	ldx	<dl
+	ldy	>dl
+	lda	#2
+setDl
+	stx	$230
+	sty	$231
+	sta	^1d
+	seq:lda	#$c
+	sta	$2c4
+	eor	#$c
+	sta	$2c8
+	rts
+
 hsc
 	ldx	#url_len-1
 	mva:rpl	url,x	DataMatrix_data,x-
 	ldx	#4
 urlRecord
-	lda	record,x
+	mva	record,x	yourRecord+15,x
 	sne:lda	#'0'
 	ora	#' '
 	sta	DataMatrix_data+url_len,x
@@ -907,9 +958,7 @@ urlGfxSrc	equ	*-2
 	jsr	urlClr
 	cpx	#240
 	bcc	urlGfxLine
-
-	mwa	#urlDl	$230
-	jmp	*
+	rts
 
 urlClr
 	lda	#0
