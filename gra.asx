@@ -255,8 +255,7 @@ niemrug
 	rti
 
 main
-:MSX	jsr	startMsx
-	jsr	setBak0
+	jsr	startMsxBak0
 	jsr	ramka
 	mwa	#dli	$200
 	mva	#$2a	$22f
@@ -291,7 +290,7 @@ poczbaneruj
 	lda	yourRecord+19
 	beq	setbaner
 	ldx	<hscBanner
-	ldy	>hscBanner
+:>hscBanner!=>banner	ldy	>hscBanner
 setbaner
 	stx	dlb+1
 	sty	dlb+2
@@ -339,9 +338,8 @@ noHsc
 	bne	baneruj
 
 	jsr	adamLawka
-	jsr	setBak0
 
-	jsr	startMsx
+	jsr	startMsxBak0
 	mva	#$46	dlb
 	mwa	#fuel	dlb+1
 
@@ -353,15 +351,14 @@ zeroscor
 	lda	#0
 	dex:bpl	zeroscor
 
-	mva	#$53	bulls
-	mva	#$93	bananas
-	mva	#0	moznapojawiac
+;	lda	#0
+	sta	moznapojawiac
 	sta	jestbul
 	sta	jestban
-	lda	#ILEBUL
-	sta	bullcnt
-	lda	#ILEBAN
-	sta	banacnt
+	mva	#$53	bulls
+	mva	#$93	bananas
+	mva	#ILEBUL	bullcnt
+	mva	#ILEBAN	banacnt
 	mva	#1	speed
 	mwa	#-START_UP_VEL	adamv
 
@@ -566,10 +563,6 @@ high1
 	cmp	record,x
 	bcc	noHigh
 	beq	high1
-high2
-	mva	status+14,x	record,x
-	inx:cpx	#5
-	bcc	high2
 	jsr	hsc
 noHigh
 ;;;	lda	#100
@@ -621,8 +614,14 @@ shscrol
 	sta	fscrol
 	rts
 
-setBak0
-	lda	#0
+startMsxBak0
+	mva	#3	^2f
+	lsr	@
+	sta	licz
+	lsr	@
+	sta	pozycja
+	sta	^28
+
 setBak
 	add	<screen+11*WIDTH-1
 	ldy	>screen+11*WIDTH-1
@@ -882,15 +881,6 @@ setSprite1
 	bcc	setSprite1
 	rts
 
-startMsx
-	mva	#3	^2f
-	lsr	@
-	sta	licz
-	lsr	@
-	sta	pozycja
-	sta	^28
-	rts
-
 fire
 	lda	^2f
 :3	lsr	@
@@ -930,7 +920,8 @@ hsc
 	mva:rpl	url,x	DataMatrix_data,x-
 	ldx	#4
 urlRecord
-	mva	record,x	yourRecord+15,x
+	mva	status+14,x	record,x
+	sta	yourRecord+15,x
 	sne:lda	#'0'
 	ora	#' '
 	sta	DataMatrix_data+url_len,x
