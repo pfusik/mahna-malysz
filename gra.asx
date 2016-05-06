@@ -1,3 +1,5 @@
+	icl	'datamatrix.asx'
+
 START_UP_VEL	equ	328
 MACH_VEL	equ	150
 GRAVITY	equ	4
@@ -80,6 +82,13 @@ dll
 dlb
 	dta	$56,a(banner)
 	dta	$41,a(dl)
+
+urlScreen	equ	DataMatrix_data
+urlDl
+	dta	$70,$70,$70,$48,a(urlScreen)
+:23	dta	8
+	dta	$41,a(urlDl)
+
 colors
 	dta	$0c,$46,$1a,$00
 missiles
@@ -114,6 +123,10 @@ record
 	dta	d'2003-09-28'
 banend
 	dta	d'                        '
+
+url
+	dta	c'http://atari.pl/hsc/?x=0030'
+url_len	equ	*-url
 
 	icl	'sprajty.asx'
 
@@ -253,7 +266,7 @@ initgtia
 	stx	^4e
 	mva	>PMG	^47
 	mva	#$31	$26f
-
+ jmp	hsc
 	mva	#$ff	^0c
 	sta	^11
 	mva	#2	^1d
@@ -859,6 +872,48 @@ fire
 ramka
 	lda	20
 	cmp:req	20
+	rts
+
+hsc
+	ldx	#url_len-1
+	mva:rpl	url,x	DataMatrix_data,x-
+	ldx	#4
+urlRecord
+	lda	record,x
+	sne:lda	#'0'
+	ora	#' '
+	sta	DataMatrix_data+url_len,x
+	dex
+	bpl	urlRecord
+	mva	#DataMatrix_EOF	DataMatrix_data+url_len+5
+	jsr	DataMatrix_code
+	mwa	#DataMatrix_symbol	urlGfxSrc
+	ldx	#0
+urlGfxLine
+	jsr	urlClr
+	ldy	#6
+urlGfxByte
+	lda	#1
+urlGfxPixel
+	asl	@
+	lsr	DataMatrix_symbol
+urlGfxSrc	equ	*-2
+	inw	urlGfxSrc
+	rol	@
+	bcc	urlGfxPixel
+	sta	urlScreen,x+
+	dey
+	bne	urlGfxByte
+	jsr	urlClr
+	cpx	#240
+	bcc	urlGfxLine
+
+	mwa	#urlDl	$230
+	jmp	*
+
+urlClr
+	lda	#0
+:2	sta	urlScreen,x+
 	rts
 
 	run	main
