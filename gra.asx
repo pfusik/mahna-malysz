@@ -323,7 +323,7 @@ ban
 
 	lda	yourRecord+19
 	beq	noHsc
-	jsr	tab
+	jsr	space
 	bne	noHsc
 	ldx	<urlDl
 	ldy	>urlDl
@@ -332,7 +332,7 @@ ban
 hscuj
 	jsr	ramka
 	jsr	msx_player
-	jsr	tab
+	jsr	space
 	bne	hscuj
 	jsr	gameDl
 noHsc
@@ -896,7 +896,7 @@ ramka
 	cmp:req	20
 	rts
 
-tab
+space
 	ldx	#$ff
 	lda	$2fc
 	and	#$3f
