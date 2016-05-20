@@ -1,3 +1,6 @@
+DataMatrix_code	equ	$2100
+DataMatrix_data	equ	$3c00
+DataMatrix_SIZE	equ	24
 	icl	'datamatrix.asx'
 
 START_UP_VEL	equ	328
