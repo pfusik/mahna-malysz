@@ -52,6 +52,8 @@ eaten sufficient amount of bread rolls).
 After each kilometer the tailwind gets stronger, up to 8 kilometers
 (such distance is a challenge even for Adam).
 
+[![Watch on YouTube](https://img.youtube.com/vi/a8B2klskXoA/0.jpg)](https://www.youtube.com/watch?v=a8B2klskXoA)
+
 Download and online scores
 --------------------------
 
