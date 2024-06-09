@@ -7,6 +7,8 @@ You control the famous ski jumper
 [Adam Małysz](https://en.wikipedia.org/wiki/Adam_Ma%C5%82ysz)
 using one button.
 
+See an excellent review on YouTube:
+
 [![Watch on YouTube](https://img.youtube.com/vi/a8B2klskXoA/0.jpg)](https://www.youtube.com/watch?v=a8B2klskXoA)
 
 Requirements
